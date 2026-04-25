@@ -273,11 +273,31 @@ export default function MapView({
 
     // Base vector style depends on theme; when satellite we still start with
     // the vector style and ADD the raster imagery on top programmatically.
+    const googleLightStyle: any = {
+      version: 8,
+      sources: {
+        'google-maps': {
+          type: 'raster',
+          tiles: ['https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'],
+          tileSize: 256,
+          attribution: 'Map data © Google',
+        },
+      },
+      layers: [
+        {
+          id: 'google-maps-layer',
+          type: 'raster',
+          source: 'google-maps',
+          minzoom: 0,
+          maxzoom: 22,
+        },
+      ],
+    };
+
     const baseStyle =
       theme === 'dark'
         ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-        : 'https://tiles.openfreemap.org/styles/liberty';
-
+        : googleLightStyle;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: baseStyle,

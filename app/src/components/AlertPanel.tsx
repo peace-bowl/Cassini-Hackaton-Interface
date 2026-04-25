@@ -154,20 +154,20 @@ export default function AlertPanel({
                   animationDelay: `${index * 50}ms`,
                   background: isSelected
                     ? 'rgba(0, 229, 255, 0.08)'
-                    : 'rgba(13, 21, 37, 0.4)',
+                    : 'var(--alert-card-bg)',
                   border: isSelected
                     ? '1px solid rgba(0, 229, 255, 0.25)'
                     : '1px solid transparent',
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) {
-                    e.currentTarget.style.background = 'rgba(26, 41, 64, 0.5)';
-                    e.currentTarget.style.border = '1px solid rgba(36, 53, 82, 0.6)';
+                    e.currentTarget.style.background = 'var(--alert-card-hover)';
+                    e.currentTarget.style.border = '1px solid var(--alert-card-hover-border)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isSelected) {
-                    e.currentTarget.style.background = 'rgba(13, 21, 37, 0.4)';
+                    e.currentTarget.style.background = 'var(--alert-card-bg)';
                     e.currentTarget.style.border = '1px solid transparent';
                   }
                 }}

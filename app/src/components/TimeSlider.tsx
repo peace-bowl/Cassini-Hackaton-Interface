@@ -226,7 +226,7 @@ export default function TimeSlider({
           onClick={handleSkipBack}
           className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer"
           style={{
-            background: 'rgba(26, 41, 64, 0.5)',
+            background: 'var(--alert-card-hover)',
             color: 'var(--text-secondary)',
           }}
           aria-label="Skip to start"
@@ -259,7 +259,7 @@ export default function TimeSlider({
           onClick={handleSkipForward}
           className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer"
           style={{
-            background: 'rgba(26, 41, 64, 0.5)',
+            background: 'var(--alert-card-hover)',
             color: 'var(--text-secondary)',
           }}
           aria-label="Skip to end"

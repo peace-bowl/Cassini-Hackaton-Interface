@@ -33,9 +33,9 @@ export default function DashboardPage() {
   // Apply theme class to document body
   useEffect(() => {
     if (theme === 'light') {
-      document.body.classList.add('light');
+      document.documentElement.classList.add('light');
     } else {
-      document.body.classList.remove('light');
+      document.documentElement.classList.remove('light');
     }
   }, [theme]);
 

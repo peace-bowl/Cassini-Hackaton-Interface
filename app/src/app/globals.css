@@ -141,6 +141,26 @@ body::before {
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
+.light .glass-panel {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ─── Light mode alert card backgrounds ─── */
+:root {
+  --alert-card-bg: rgba(13, 21, 37, 0.4);
+  --alert-card-hover: rgba(26, 41, 64, 0.5);
+  --alert-card-hover-border: rgba(36, 53, 82, 0.6);
+}
+
+.light {
+  --alert-card-bg: rgba(255, 255, 255, 0.6);
+  --alert-card-hover: rgba(255, 255, 255, 0.9);
+  --alert-card-hover-border: rgba(0, 0, 0, 0.15);
+}
+
 /* ─── Severity Indicator Glow ─── */
 .severity-high {
   color: var(--red);
@@ -219,6 +239,17 @@ body::before {
   font-family: var(--font-body) !important;
 }
 
+.light .maplibregl-popup-content {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Force popup text to adapt to theme */
+.light .maplibregl-popup-content h3,
+.light .maplibregl-popup-content p,
+.light .maplibregl-popup-content span {
+  color: var(--text-primary) !important;
+}
+
 .maplibregl-popup-tip {
   border-top-color: var(--glass-bg) !important;
 }
@@ -233,6 +264,21 @@ body::before {
 .maplibregl-popup-close-button:hover {
   color: var(--cyan) !important;
   background: transparent !important;
+}
+
+/* ─── MapLibre Navigation Controls light theme ─── */
+.light .maplibregl-ctrl-group {
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.light .maplibregl-ctrl button {
+  color: #374151 !important;
+}
+
+.light .maplibregl-ctrl button:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
 }
 
 /* ─── Staggered Fade-In Animation ─── */
