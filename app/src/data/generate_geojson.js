@@ -1,0 +1,109 @@
+const fs = require('fs');
+const osmData = JSON.parse(fs.readFileSync('osm_data.json'));
+
+const features = [];
+let idCounter = 1;
+
+// Helper to calculate distance
+function dist(p1, p2) {
+  return Math.sqrt(Math.pow(p1.lon - p2.lon, 2) + Math.pow(p1.lat - p2.lat, 2));
+}
+
+osmData.elements.forEach((el) => {
+  if (!el.geometry || el.geometry.length < 3) return;
+  if (!el.tags) return;
+
+  let isRiver = el.tags.waterway === 'river' || el.tags.waterway === 'canal';
+  let isPark = false; // Exclude parks completely
+  let isLake = el.tags.water === 'lake' || el.tags.water === 'reservoir' || el.tags.natural === 'water';
+  
+  if (!isRiver && !isLake) return;
+  
+  // Exclude very small features or weird ones
+  if (el.geometry.length < 4) return;
+
+  // Ensure it's a closed polygon. If it's a river, we need to buffer it because it's a line.
+  let coordinates = [];
+  
+  if (isRiver) {
+    // Buffer the line by a small amount to make it a polygon
+    const buffer = 0.0003; // approx 30 meters
+    let leftSide = [];
+    let rightSide = [];
+    
+    for (let i = 0; i < el.geometry.length; i++) {
+      let p = el.geometry[i];
+      let pNext = el.geometry[i+1] || el.geometry[i];
+      let pPrev = el.geometry[i-1] || el.geometry[i];
+      
+      let dx = pNext.lon - pPrev.lon;
+      let dy = pNext.lat - pPrev.lat;
+      let len = Math.sqrt(dx*dx + dy*dy);
+      
+      if (len === 0) {
+        dx = 1; dy = 0; len = 1;
+      }
+      
+      let nx = -dy / len;
+      let ny = dx / len;
+      
+      leftSide.push([p.lon + nx * buffer, p.lat + ny * buffer]);
+      rightSide.push([p.lon - nx * buffer, p.lat - ny * buffer]);
+    }
+    rightSide.reverse();
+    coordinates = [...leftSide, ...rightSide, leftSide[0]]; // Close polygon
+  } else {
+    // It's a park or lake (area), so it should be closed
+    coordinates = el.geometry.map(p => [p.lon, p.lat]);
+    // Ensure closed
+    if (coordinates[0][0] !== coordinates[coordinates.length-1][0] || 
+        coordinates[0][1] !== coordinates[coordinates.length-1][1]) {
+      coordinates.push([...coordinates[0]]);
+    }
+  }
+
+  // Determine mock satellite values based on type
+  let name = el.tags.name || (isRiver ? 'Bega Canal' : isPark ? 'Park' : 'Lake');
+  let type = isRiver ? 'river' : isPark ? 'vegetation' : 'lake';
+  
+  let ndwi, ndvi, ndsi, swir;
+  
+  if (isRiver || isLake) {
+    ndwi = 0.7 + Math.random() * 0.2;
+    ndvi = 0.05 + Math.random() * 0.1;
+    ndsi = 0.01;
+    swir = 'water';
+  } else if (isPark) {
+    ndwi = 0.15 + Math.random() * 0.15;
+    ndvi = 0.7 + Math.random() * 0.2;
+    ndsi = 0.0;
+    swir = 'vegetation';
+  }
+
+  features.push({
+    type: "Feature",
+    id: `sat-${idCounter++}`,
+    properties: {
+      name: name,
+      type: type,
+      ndwi: ndwi,
+      ndvi: ndvi,
+      ndsi: ndsi,
+      swir: swir,
+      area_km2: (Math.random() * 0.5 + 0.1).toFixed(2),
+      passDate: "2026-04-24T10:32:00Z"
+    },
+    geometry: {
+      type: "Polygon",
+      coordinates: [coordinates]
+    }
+  });
+});
+
+const featureCollection = {
+  type: "FeatureCollection",
+  features: features
+};
+
+fs.writeFileSync('satelliteData.json', JSON.stringify(featureCollection, null, 2));
+console.log('satelliteData.json updated successfully with ' + features.length + ' features.');
