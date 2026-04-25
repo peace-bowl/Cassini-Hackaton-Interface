@@ -29,35 +29,35 @@ export interface SatelliteLayerConfig {
  * Dry land (brown) → moist soil (grey-green) → surface water (blue) → deep water (navy)
  */
 function ndwiColor(value: number): string {
-  if (value < 0.0)  return 'rgba(138,  97,  46, 0.75)';
+  if (value < 0.0) return 'rgba(138,  97,  46, 0.75)';
   if (value < 0.15) return 'rgba(186, 148,  80, 0.70)';
   if (value < 0.30) return 'rgba(112, 168, 137, 0.72)';
   if (value < 0.50) return 'rgba( 38, 139, 210, 0.78)';
   if (value < 0.70) return 'rgba(  3,  93, 186, 0.85)';
-  return                    'rgba(  3,  53, 140, 0.90)';
+  return 'rgba(  3,  53, 140, 0.90)';
 }
 
 /**
  * NDVI color ramp — Copernicus red→yellow→green palette
  */
 function ndviColor(value: number): string {
-  if (value < 0.1)  return 'rgba(215,  48,  39, 0.75)';
-  if (value < 0.2)  return 'rgba(244, 109,  67, 0.72)';
-  if (value < 0.3)  return 'rgba(253, 174,  97, 0.72)';
-  if (value < 0.5)  return 'rgba(166, 217, 106, 0.75)';
-  if (value < 0.7)  return 'rgba( 82, 188, 144, 0.78)';
-  return                    'rgba( 26, 152,  80, 0.85)';
+  if (value < 0.1) return 'rgba(215,  48,  39, 0.75)';
+  if (value < 0.2) return 'rgba(244, 109,  67, 0.72)';
+  if (value < 0.3) return 'rgba(253, 174,  97, 0.72)';
+  if (value < 0.5) return 'rgba(166, 217, 106, 0.75)';
+  if (value < 0.7) return 'rgba( 82, 188, 144, 0.78)';
+  return 'rgba( 26, 152,  80, 0.85)';
 }
 
 /**
  * NDSI color ramp — dark → pale-blue → white
  */
 function ndsiColor(value: number): string {
-  if (value < 0.1)  return 'rgba( 30,  30,  50, 0.20)';
-  if (value < 0.3)  return 'rgba( 74, 113, 168, 0.55)';
-  if (value < 0.5)  return 'rgba(116, 169, 207, 0.65)';
-  if (value < 0.7)  return 'rgba(166, 217, 247, 0.75)';
-  return                    'rgba(215, 240, 255, 0.85)';
+  if (value < 0.1) return 'rgba( 30,  30,  50, 0.20)';
+  if (value < 0.3) return 'rgba( 74, 113, 168, 0.55)';
+  if (value < 0.5) return 'rgba(116, 169, 207, 0.65)';
+  if (value < 0.7) return 'rgba(166, 217, 247, 0.75)';
+  return 'rgba(215, 240, 255, 0.85)';
 }
 
 /**
@@ -65,13 +65,13 @@ function ndsiColor(value: number): string {
  */
 function swirColor(value: number, surfaceType?: string): string {
   switch (surfaceType) {
-    case 'water':      return 'rgba(  3,  30, 100, 0.85)';
+    case 'water': return 'rgba(  3,  30, 100, 0.85)';
     case 'vegetation': return 'rgba( 44, 188,  66, 0.75)';
-    case 'soil':       return 'rgba(180, 100, 120, 0.72)';
+    case 'soil': return 'rgba(180, 100, 120, 0.72)';
     default:
       if (value > 0.5) return 'rgba(  3,  30, 100, 0.80)';
       if (value > 0.3) return 'rgba( 44, 188,  66, 0.70)';
-      return                  'rgba(180, 100, 120, 0.65)';
+      return 'rgba(180, 100, 120, 0.65)';
   }
 }
 
