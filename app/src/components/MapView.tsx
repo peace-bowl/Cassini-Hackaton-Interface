@@ -276,7 +276,7 @@ export default function MapView({
     const baseStyle =
       theme === 'dark'
         ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-        : 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+        : 'https://tiles.openfreemap.org/styles/liberty';
 
     const map = new maplibregl.Map({
       container: containerRef.current,
