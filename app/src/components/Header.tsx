@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Waves, FileUp, Sun, Moon } from 'lucide-react';
+import { Waves, FileUp, Sun, Moon, Globe } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Header Component
@@ -17,6 +18,12 @@ interface HeaderProps {
 }
 
 export default function Header({ onSubmitReport, citySearchNode, theme = 'dark', onToggleTheme }: HeaderProps) {
+  const { t, language, setLanguage } = useLanguage();
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'ro' : 'en');
+  };
+
   return (
     <header
       id="main-header"
@@ -41,10 +48,10 @@ export default function Header({ onSubmitReport, citySearchNode, theme = 'dark',
             className="font-display text-sm font-medium tracking-widest uppercase"
             style={{ color: 'var(--cyan-dim)', letterSpacing: '0.15em', fontSize: '10px' }}
           >
-            EU Space for Water
+            {t('app.subtitle')}
           </span>
           <h1 className="font-display text-lg font-semibold text-text-primary leading-tight -mt-0.5">
-            Cassini Observatory
+            {t('app.title')}
           </h1>
         </div>
       </div>
@@ -52,7 +59,9 @@ export default function Header({ onSubmitReport, citySearchNode, theme = 'dark',
       {/* Center: Search Bar / Status indicator */}
       <div className="hidden md:flex items-center gap-4">
         {citySearchNode ? (
-          citySearchNode
+          <div className="w-64">
+            {citySearchNode}
+          </div>
         ) : (
           <div className="flex items-center gap-2 text-xs text-text-muted">
             <span
@@ -62,7 +71,7 @@ export default function Header({ onSubmitReport, citySearchNode, theme = 'dark',
                 boxShadow: '0 0 6px rgba(0, 230, 118, 0.5)',
               }}
             />
-            <span className="font-body">System Operational</span>
+            <span className="font-body">{t('system.operational')}</span>
             <span className="mx-2 opacity-30">│</span>
             <span className="font-body opacity-60">Timișoara Region</span>
           </div>
@@ -71,12 +80,23 @@ export default function Header({ onSubmitReport, citySearchNode, theme = 'dark',
 
       {/* Right: Actions */}
       <div className="flex items-center gap-3">
+        {/* Language Toggle */}
+        <button
+          onClick={toggleLanguage}
+          className="flex items-center justify-center h-10 px-3 rounded-lg transition-colors hover:bg-[rgba(0,229,255,0.05)] cursor-pointer gap-2"
+          style={{ border: '1px solid var(--glass-border)' }}
+          aria-label="Toggle language"
+        >
+          <Globe className="w-4 h-4 text-cyan" />
+          <span className="font-display text-xs font-semibold text-cyan">{language.toUpperCase()}</span>
+        </button>
+
         {onToggleTheme && (
           <button
             onClick={onToggleTheme}
             className="flex items-center justify-center w-10 h-10 rounded-lg transition-colors hover:bg-[rgba(0,229,255,0.05)] cursor-pointer"
             style={{ border: '1px solid var(--glass-border)' }}
-            aria-label="Toggle theme"
+            aria-label={t('theme.toggle')}
           >
             {theme === 'dark' ? (
               <Sun className="w-4 h-4 text-cyan" />
@@ -97,7 +117,7 @@ export default function Header({ onSubmitReport, citySearchNode, theme = 'dark',
           }}
         >
           <FileUp className="w-4 h-4" />
-          Submit Report
+          {t('action.submitReport')}
         </button>
       </div>
     </header>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Clock } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * TimeSlider Component
@@ -39,6 +40,8 @@ export default function TimeSlider({
   currentDate,
   onDateChange,
 }: TimeSliderProps) {
+  const { t, language } = useLanguage();
+  const locale = language === 'ro' ? 'ro-RO' : 'en-GB';
   const [isPlaying, setIsPlaying] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -98,7 +101,7 @@ export default function TimeSlider({
   while (d <= endDate) {
     const pct = ((d.getTime() - startDate.getTime()) / totalRange) * 100;
     dayMarkers.push({
-      label: d.toLocaleDateString('en-GB', { weekday: 'short' }),
+      label: d.toLocaleDateString(locale, { weekday: 'short' }),
       percent: pct,
     });
     d.setDate(d.getDate() + 1);
@@ -115,13 +118,13 @@ export default function TimeSlider({
         <div className="flex items-center gap-2">
           <Clock className="w-3.5 h-3.5 text-cyan-dim" />
           <span className="font-display text-xs font-medium text-text-secondary tracking-wide uppercase">
-            Timeline
+            {t('timeline.title')}
           </span>
         </div>
 
         <div className="flex items-center gap-1">
           <span className="font-body text-sm text-text-primary font-medium">
-            {formatDate(currentDate)}
+            {new Date(currentDate).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })}
           </span>
           <span className="text-text-muted mx-1">·</span>
           <span className="font-body text-sm text-cyan tabular-nums">

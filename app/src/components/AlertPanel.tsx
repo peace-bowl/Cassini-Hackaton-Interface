@@ -10,6 +10,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { WaterAlert, Severity } from '@/data/mockData';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * AlertPanel Component
@@ -37,31 +38,6 @@ function SeverityIcon({ severity }: { severity: Severity }) {
   }
 }
 
-/** Severity label styling */
-function severityLabel(severity: Severity): string {
-  switch (severity) {
-    case 'high':
-      return 'Critical';
-    case 'medium':
-      return 'Warning';
-    case 'low':
-      return 'Info';
-  }
-}
-
-/** Relative time formatter */
-function timeAgo(timestamp: string): string {
-  const now = new Date('2026-04-25T12:00:00Z');
-  const then = new Date(timestamp);
-  const diffMs = now.getTime() - then.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffDays > 0) return `${diffDays}d ago`;
-  if (diffHours > 0) return `${diffHours}h ago`;
-  return 'Just now';
-}
-
 export default function AlertPanel({
   alerts,
   selectedAlertId,
@@ -69,6 +45,34 @@ export default function AlertPanel({
   isCollapsed,
   onToggleCollapse,
 }: AlertPanelProps) {
+  const { t, language } = useLanguage();
+
+  /** Severity label via translations */
+  function severityLabel(severity: Severity): string {
+    switch (severity) {
+      case 'high': return t('alert.level.critical');
+      case 'medium': return t('alert.level.warning');
+      case 'low': return t('alert.level.info');
+    }
+  }
+
+  /** Relative time formatter */
+  function timeAgo(timestamp: string): string {
+    const now = new Date('2026-04-25T12:00:00Z');
+    const then = new Date(timestamp);
+    const diffMs = now.getTime() - then.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (language === 'ro') {
+      if (diffDays > 0) return `acum ${diffDays}z`;
+      if (diffHours > 0) return `acum ${diffHours}h`;
+      return t('alert.time.justNow');
+    }
+    if (diffDays > 0) return `${diffDays}d ${t('alert.time.ago')}`;
+    if (diffHours > 0) return `${diffHours}h ${t('alert.time.ago')}`;
+    return t('alert.time.justNow');
+  }
   // Count by severity
   const highCount = alerts.filter((a) => a.severity === 'high').length;
   const medCount = alerts.filter((a) => a.severity === 'medium').length;

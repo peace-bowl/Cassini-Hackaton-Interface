@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Upload, MapPin, Calendar, FileText, ChevronDown } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * ReportModal Component
@@ -19,6 +20,7 @@ interface ReportModalProps {
 const INCIDENT_TYPES = ['Leak', 'Flood', 'Drought', 'Contamination', 'Other'] as const;
 
 export default function ReportModal({ isOpen, onClose, onSubmit }: ReportModalProps) {
+  const { t } = useLanguage();
   const [incidentType, setIncidentType] = useState<string>('');
   const [latitude, setLatitude] = useState('45.7489');
   const [longitude, setLongitude] = useState('21.2087');

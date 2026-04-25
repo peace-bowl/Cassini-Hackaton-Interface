@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, Loader2 } from 'lucide-react';
 import { BoundingBox } from '@/services/overpassService';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface CityResult {
   place_id: number;
@@ -22,6 +23,7 @@ interface CitySearchProps {
 }
 
 export default function CitySearch({ onCitySelect }: CitySearchProps) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<CityResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -90,13 +92,13 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
   return (
     <div className="relative" ref={dropdownRef}>
       <div 
-        className="flex items-center glass-panel rounded-xl px-3 py-2 w-64"
+        className="flex items-center glass-panel rounded-xl px-3 py-2 w-full transition-all duration-300"
         style={{ border: '1px solid rgba(0, 229, 255, 0.2)' }}
       >
         <Search className="w-4 h-4 text-cyan opacity-70 mr-2" />
         <input
           type="text"
-          placeholder="Search Romanian cities..."
+          placeholder={t('search.placeholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => { if (results.length > 0) setIsOpen(true); }}

@@ -8,6 +8,7 @@ import AlertPanel from '@/components/AlertPanel';
 import ReportModal from '@/components/ReportModal';
 import Toast from '@/components/Toast';
 import CitySearch from '@/components/CitySearch';
+import WelcomeScreen from '@/components/WelcomeScreen';
 import SatelliteLayerControl from '@/components/SatelliteLayerControl';
 import DynamicLegend from '@/components/DynamicLegend';
 import { BoundingBox, fetchCityWaterData } from '@/services/overpassService';
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [activeLayer, setActiveLayer] = useState<SatelliteLayerId>('ndwi');
 
   const [alerts, setAlerts] = useState<WaterAlert[]>(mockAlerts);
@@ -96,6 +98,9 @@ export default function DashboardPage() {
       // Generate localized mock alerts
       const newAlerts = generateMockAlertsForCity(bbox, cityName);
       setAlerts(newAlerts);
+      
+      // Hide welcome screen
+      setShowWelcome(false);
 
       // Fetch precise water data for the new bounds
       try {
@@ -117,7 +122,7 @@ export default function DashboardPage() {
       {/* Header */}
       <Header 
         onSubmitReport={handleOpenModal} 
-        citySearchNode={<CitySearch onCitySelect={handleCitySelect} />}
+        citySearchNode={!showWelcome ? <CitySearch onCitySelect={handleCitySelect} /> : undefined}
         theme={theme}
         onToggleTheme={handleToggleTheme}
       />
@@ -168,7 +173,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Alert Panel (Right Sidebar) */}
+        {/* Right Sidebar Alerts */}
         <AlertPanel
           alerts={filteredAlerts}
           selectedAlertId={selectedAlertId}
@@ -178,7 +183,10 @@ export default function DashboardPage() {
         />
       </main>
 
-      {/* Report Modal */}
+      {/* Welcome Screen Overlay */}
+      {showWelcome && <WelcomeScreen onCitySelect={handleCitySelect} />}
+
+      {/* Modals & Toasts */}
       <ReportModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
