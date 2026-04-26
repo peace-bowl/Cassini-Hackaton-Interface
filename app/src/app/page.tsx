@@ -20,7 +20,7 @@ export default function DashboardPage() {
   // ─── State ───
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
-  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -62,6 +62,8 @@ export default function DashboardPage() {
 
   const handleSelectAlert = useCallback((id: string) => {
     setSelectedAlertId((prev) => (prev === id ? null : id));
+    // Auto-expand panel when selecting an alert
+    setIsPanelCollapsed(false);
   }, []);
 
   const handleTogglePanel = useCallback(() => {
@@ -127,13 +129,13 @@ export default function DashboardPage() {
         onToggleTheme={handleToggleTheme}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex pt-[58px] overflow-hidden">
+      {/* Main Content — vertical stack: map area + bottom alert drawer */}
+      <main className="flex-1 flex flex-col pt-[52px] overflow-hidden">
         {/* Map Area (fills remaining space) */}
         <div className="flex-1 relative overflow-hidden">
           {/* Map */}
           <MapView
-            key={theme} // Force complete unmount and remount when theme changes
+            key={theme}
             theme={theme}
             alerts={filteredAlerts}
             selectedAlertId={selectedAlertId}
@@ -144,14 +146,14 @@ export default function DashboardPage() {
             bbox={cityBbox}
           />
 
-          {/* Satellite Layer Control (left side over map) */}
+          {/* Satellite Layer Control (left tool rail) */}
           <SatelliteLayerControl
             activeLayer={activeLayer}
             onLayerChange={handleLayerChange}
           />
 
           {/* Dynamic Legend (bottom right) */}
-          <DynamicLegend activeLayer={activeLayer} />
+          <DynamicLegend activeLayer={activeLayer} mapCenter={cityCenter} />
 
           {/* Time Slider Overlay */}
           <TimeSlider
@@ -160,20 +162,9 @@ export default function DashboardPage() {
             currentDate={currentDate}
             onDateChange={handleDateChange}
           />
-
-          {/* Subtle vignette overlay on map edges */}
-          <div
-            className="absolute inset-0 pointer-events-none z-10"
-            style={{
-              background: `
-                radial-gradient(ellipse at center, transparent 50%, var(--abyss) 100%)
-              `,
-              opacity: 0.3,
-            }}
-          />
         </div>
 
-        {/* Right Sidebar Alerts */}
+        {/* Bottom Alert Drawer */}
         <AlertPanel
           alerts={filteredAlerts}
           selectedAlertId={selectedAlertId}

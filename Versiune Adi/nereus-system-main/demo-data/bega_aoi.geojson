@@ -1,0 +1,42 @@
+{
+  "type": "FeatureCollection",
+  "name": "bega_aoi",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bega Canal — Timișoara demo region",
+        "description": "Approximate bounding area for Sentinel-2 scan (EPSG:4326)",
+        "sentinel2_bbox": [21.15, 45.72, 21.35, 45.78]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [21.15, 45.72],
+          [21.35, 45.72],
+          [21.35, 45.78],
+          [21.15, 45.78],
+          [21.15, 45.72]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lacul Surduc — Giarmata Vii",
+        "description": "Surduc reservoir — extended scan area",
+        "sentinel2_bbox": [21.55, 45.50, 21.75, 45.62]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [21.55, 45.50],
+          [21.75, 45.50],
+          [21.75, 45.62],
+          [21.55, 45.62],
+          [21.55, 45.50]
+        ]]
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - nereus_db:/app/data
+      - nereus_cache:/app/cache
+    environment:
+      - NEREUS_OFFLINE_MODE=${NEREUS_OFFLINE_MODE:-true}
+      - CDSE_USERNAME=${CDSE_USERNAME:-}
+      - CDSE_PASSWORD=${CDSE_PASSWORD:-}
+      - DATABASE_URL=sqlite:////app/data/nereus.db
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:4173
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_MAPTILER_KEY=${VITE_MAPTILER_KEY:-6R5ckECEl2yLCMqeO2nK}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  nereus_db:
+  nereus_cache:

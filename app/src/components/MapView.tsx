@@ -61,95 +61,95 @@ const EOX_ATTRIBUTION =
   '(Contains modified Copernicus Sentinel data 2021)';
 
 /* ─────────────────────────────────────────────────────────────────────
-   Copernicus-style MapLibre colour expressions
-   These are native GL expressions evaluated per-feature from its
-   properties, avoiding the O(n) JS loop we had before.
+   Dan's satellite composite colour expressions
+   Faithfully reimplements the logic from Cod dan.txt in MapLibre GL:
+     NDWI  → turbidity: blue (clear water) ↔ white-blue (turbid/sediment)
+     NDVI  → algae/silt using ndvi_water property: green (algae) ↔ brown (silt)
+     NDSI  → snow cover: transparent → icy white
+     SWIR  → surface type: dark-blue (water) | green (vegetation) | tan (urban/soil)
    ───────────────────────────────────────────────────────────────── */
 
 /**
- * Build a `step` expression that colours features by their NDWI value,
- * matching the Copernicus Browser NDWI palette exactly.
+ * NDWI turbidity fill — Dan's interpretation:
+ *   ndwi > 0.50 → clear/open water (deep blue)  (#003366 family)
+ *   ndwi 0.30–0.50 → surface water (medium blue)
+ *   ndwi 0.15–0.30 → turbid / suspended sediment (light blue-white) (#ADD8E6 family)
+ *   ndwi < 0.15   → land (transparent, EOX base shows through)
  */
 function ndwiFillColor() {
-  // Copernicus NDWI: brown → grey-green → cyan-blue → blue → deep navy
   return [
     'step', ['get', 'ndwi'],
-    'rgba(138, 97,  46, 0.75)',   // < 0.0  dry land
-    0.0,  'rgba(186,148, 80, 0.70)',   // 0.0–0.15
-    0.15, 'rgba(112,168,137, 0.72)',   // 0.15–0.3  moist soil
-    0.30, 'rgba( 38,139,210, 0.78)',   // 0.30–0.5  surface water
-    0.50, 'rgba(  3, 93, 186, 0.85)',  // 0.50–0.7  open water
-    0.70, 'rgba(  3, 53, 140, 0.90)',  // ≥ 0.7     deep water
+    'rgba(0, 0, 0, 0)',            // < 0.15 land – transparent
+    0.15, 'rgba(210, 230, 255, 0.82)',  // 0.15–0.30 turbid (white-blue, like #ADD8E6)
+    0.30, 'rgba(140, 195, 245, 0.85)',  // 0.30–0.50 moderate turbidity
+    0.50, 'rgba( 30, 100, 190, 0.88)', // 0.50–0.70 clear surface water (blue)
+    0.70, 'rgba( 10,  60, 150, 0.90)', // 0.70–0.85 open water (deeper blue)
+    0.85, 'rgba(  2,  30, 102, 0.93)', // ≥ 0.85 deep/clear water (#003366)
   ];
 }
 
 function ndwiOutlineColor() {
   return [
     'step', ['get', 'ndwi'],
-    'rgba(138, 97, 46,  0.0)',
-    0.30, 'rgba( 38,139,210, 0.90)',
-    0.50, 'rgba(  3, 93, 186, 0.95)',
-    0.70, 'rgba(  3, 53, 140, 1.0)',
+    'rgba(0,0,0,0)',
+    0.15, 'rgba(200, 220, 255, 0.45)',
+    0.50, 'rgba( 30, 100, 190, 0.65)',
+    0.70, 'rgba( 10,  60, 150, 0.80)',
   ];
 }
 
 /**
- * NDVI fill — matches Copernicus red→yellow→green palette
+ * NDVI algae/silt fill — Dan's interpretation using ndvi_water property:
+ *   ndvi_water > 0.50 → algae bloom (forest green, like #228B22)
+ *   ndvi_water ≤ 0.50 → silt/waste/brown (like #8B4513)
+ *   Falls back to standard 'ndvi' if ndvi_water is absent
  */
 function ndviFillColor() {
   return [
-    'step', ['get', 'ndvi'],
-    'rgba(215, 48,  39, 0.75)',   // < 0.1  bare soil / urban
-    0.1, 'rgba(244,109, 67, 0.72)',
-    0.2, 'rgba(253,174, 97, 0.72)',
-    0.3, 'rgba(166,217,106, 0.75)',
-    0.5, 'rgba( 82,188,144, 0.78)',
-    0.7, 'rgba( 26,152, 80, 0.85)',
+    'step', ['get', 'ndvi_water'],
+    // Below 0.15: bare silt/dark waste (deepest brown)
+    'rgba(110,  55,  15, 0.80)',
+    0.15, 'rgba(139,  69,  19, 0.78)',   // 0.15–0.30 silt (#8B4513 family)
+    0.30, 'rgba(160,  95,  40, 0.75)',   // 0.30–0.50 mixed silt
+    0.50, 'rgba( 80, 160,  50, 0.78)',   // 0.50–0.65 emerging algae
+    0.65, 'rgba( 44, 139,  40, 0.82)',   // 0.65–0.80 healthy algae (#228B22)
+    0.80, 'rgba( 20, 100,  10, 0.88)',   // ≥ 0.80 dense algae bloom
   ];
 }
 
 function ndviOutlineColor() {
-  return 'rgba(26, 152, 80, 0.7)';
-}
-
-/**
- * NDSI fill — dark → light-blue → white (snow)
- */
-function ndsiFillColor() {
+  // Greenish outline for algae zones, brownish for silt
   return [
-    'step', ['get', 'ndsi'],
-    'rgba( 30, 30, 50, 0.20)',
-    0.1, 'rgba( 74,113,168, 0.55)',
-    0.3, 'rgba(116,169,207, 0.65)',
-    0.5, 'rgba(166,217,247, 0.75)',
-    0.7, 'rgba(215,240,255, 0.85)',
+    'step', ['get', 'ndvi_water'],
+    'rgba(100, 50, 10, 0.6)',
+    0.50, 'rgba(44, 139, 40, 0.7)',
   ];
 }
 
-function ndsiOutlineColor() {
-  return 'rgba(166, 217, 247, 0.9)';
-}
 
 /**
- * SWIR false-colour — categorical by surface type
+ * SWIR categorical fill — Dan's surface type logic:
+ *   water      → dark blue-black (#000000 → refined to deep navy)
+ *   vegetation → forest green (#32CD32)
+ *   urban/soil → warm brown (#A52A2A)
  */
 function swirFillColor() {
   return [
     'match', ['get', 'swir'],
-    'water',      'rgba(  3, 30,100, 0.85)',
-    'vegetation', 'rgba( 44,188, 66, 0.75)',
-    'soil',       'rgba(180,100,120, 0.72)',
-    /* default */ 'rgba(100,100,100, 0.4)',
+    'water',      'rgba(  5,  20,  80, 0.88)',   // Dan: #000000 → refined deep navy
+    'vegetation', 'rgba( 50, 205,  50, 0.80)',   // Dan: #32CD32 lime green
+    'urban',      'rgba(165,  42,  42, 0.78)',   // Dan: #A52A2A warm brown
+    /* soil fallback */ 'rgba(180, 120,  60, 0.70)',
   ];
 }
 
 function swirOutlineColor() {
   return [
     'match', ['get', 'swir'],
-    'water',      'rgba(  3, 53,186, 0.9)',
-    'vegetation', 'rgba( 26,152, 80, 0.9)',
-    'soil',       'rgba(160, 80,100, 0.8)',
-    'rgba(80,80,80, 0.5)',
+    'water',      'rgba(  5,  20,  80, 0.70)',
+    'vegetation', 'rgba( 30, 160,  30, 0.80)',
+    'urban',      'rgba(130,  30,  30, 0.70)',
+    'rgba(140, 90, 30, 0.60)',
   ];
 }
 
@@ -164,21 +164,21 @@ function createPopupHTML(alert: WaterAlert): string {
   });
 
   return `
-    <div style="font-family: 'DM Sans', sans-serif;">
+    <div style="font-family: 'Source Sans 3', sans-serif;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <span style="
           display:inline-block;width:8px;height:8px;border-radius:50%;
           background:${severityColor};box-shadow:0 0 6px ${severityColor}80;
         "></span>
         <span style="
-          font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;
+          font-family:'Syne',sans-serif;font-size:10px;font-weight:700;
           text-transform:uppercase;letter-spacing:.1em;color:${severityColor};
         ">${severityLabel} · ${alert.type}</span>
       </div>
-      <h3 style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;
-          color:#e8edf5;margin:0 0 4px;">${alert.location}</h3>
-      <p style="font-size:11px;color:#8a9bb5;margin:0 0 8px;">${time}</p>
-      <p style="font-size:12px;color:#b0bdd0;margin:0;line-height:1.5;">${alert.description}</p>
+      <h3 style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;
+          color:#e8e0d4;margin:0 0 4px;">${alert.location}</h3>
+      <p style="font-size:11px;color:#a89e90;margin:0 0 8px;">${time}</p>
+      <p style="font-size:12px;color:#c4b8a8;margin:0;line-height:1.5;">${alert.description}</p>
     </div>
   `;
 }
@@ -206,8 +206,8 @@ function createPixelInspectorHTML(
     valueDisplay = `
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
         <span style="display:inline-block;width:14px;height:10px;border-radius:2px;
-          background:${layerColor};border:1px solid rgba(255,255,255,.15);"></span>
-        <span style="font-size:12px;color:#e8edf5;font-weight:600;">
+          background:${layerColor};border:1px solid rgba(255,255,255,.1);"></span>
+        <span style="font-size:12px;color:#e8e0d4;font-weight:600;">
           Surface: ${surfaceType.charAt(0).toUpperCase() + surfaceType.slice(1)}
         </span>
       </div>`;
@@ -215,34 +215,34 @@ function createPixelInspectorHTML(
     valueDisplay = `
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
         <span style="display:inline-block;width:14px;height:10px;border-radius:2px;
-          background:${layerColor};border:1px solid rgba(255,255,255,.15);"></span>
-        <span style="font-size:12px;color:#e8edf5;font-weight:600;">
+          background:${layerColor};border:1px solid rgba(255,255,255,.1);"></span>
+        <span style="font-size:12px;color:#e8e0d4;font-weight:600;">
           ${layerConfig.name} Value: ${Number(value).toFixed(3)}
         </span>
       </div>
-      <p style="font-size:11px;color:#00e5ff;margin:0 0 6px;font-style:italic;">${description}</p>
+      <p style="font-size:11px;color:#d4a843;margin:0 0 6px;font-style:italic;">${description}</p>
     `;
   }
 
   return `
-    <div style="font-family:'DM Sans',sans-serif;min-width:230px;">
+    <div style="font-family:'Source Sans 3',sans-serif;min-width:230px;">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
         <span style="
-          font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;
-          text-transform:uppercase;letter-spacing:.12em;color:#00e5ff;
-          background:rgba(0,229,255,.1);padding:2px 8px;border-radius:4px;
-          border:1px solid rgba(0,229,255,.15);">🛰 Pixel Inspector</span>
+          font-family:'Syne',sans-serif;font-size:9px;font-weight:700;
+          text-transform:uppercase;letter-spacing:.12em;color:#d4a843;
+          background:rgba(212,168,67,.1);padding:2px 8px;border-radius:4px;
+          border:1px solid rgba(212,168,67,.15);">🛰 Pixel Inspector</span>
       </div>
-      <h3 style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;
-          color:#e8edf5;margin:0 0 8px;">${props.name ?? 'Water Body'}</h3>
+      <h3 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+          color:#e8e0d4;margin:0 0 8px;">${props.name ?? 'Water Body'}</h3>
       ${valueDisplay}
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);">
-        <p style="font-size:10px;color:#56687d;margin:0 0 2px;">
+        <p style="font-size:10px;color:#6e665c;margin:0 0 2px;">
           Copernicus Sentinel-2, Pass Date:
         </p>
-        <p style="font-size:11px;color:#8a9bb5;margin:0;">${passDate}</p>
+        <p style="font-size:11px;color:#a89e90;margin:0;">${passDate}</p>
         ${props.area_km2
-          ? `<p style="font-size:10px;color:#56687d;margin:4px 0 0;">Area: ${props.area_km2} km²</p>`
+          ? `<p style="font-size:10px;color:#6e665c;margin:4px 0 0;">Area: ${props.area_km2} km²</p>`
           : ''}
       </div>
     </div>
@@ -424,12 +424,14 @@ export default function MapView({
 
     const isSatellite = activeLayer !== 'standard';
 
-    /* Show/hide EOX Sentinel-2 imagery layer */
+    /* Show/hide EOX Sentinel-2 imagery layer.
+       When active, show at full opacity so green land is visible beneath
+       transparent polygon areas. */
     if (map.getLayer(SAT_IMAGERY_LAYER)) {
       map.setPaintProperty(
         SAT_IMAGERY_LAYER,
         'raster-opacity',
-        isSatellite ? 1 : 0
+        isSatellite ? 1.0 : 0
       );
     }
 
@@ -459,17 +461,18 @@ export default function MapView({
         fillOpacity    = 1;
         outlineOpacity = 0.8;
         break;
-      case 'ndsi':
-        fillColor      = ndsiFillColor();
-        outlineColor   = ndsiOutlineColor();
-        fillOpacity    = 1;
-        outlineOpacity = 0.85;
-        break;
+
       case 'swir':
         fillColor      = swirFillColor();
         outlineColor   = swirOutlineColor();
         fillOpacity    = 1;
         outlineOpacity = 0.9;
+        break;
+      case 'satellite':
+        fillColor      = 'transparent';
+        outlineColor   = 'transparent';
+        fillOpacity    = 0;
+        outlineOpacity = 0;
         break;
       default:
         return;

@@ -5,8 +5,8 @@ import {
   AlertTriangle,
   Droplets,
   Info,
-  ChevronLeft,
-  ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Activity,
 } from 'lucide-react';
 import { WaterAlert, Severity } from '@/data/mockData';
@@ -15,8 +15,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 /**
  * AlertPanel Component
  * ─────────────────────
- * Collapsible right sidebar displaying active water alerts.
- * Clicking an alert card highlights the corresponding map marker.
+ * Bottom drawer displaying active water alerts.
+ * Collapsed: thin strip showing severity counts.
+ * Expanded: scrollable card grid.
  */
 interface AlertPanelProps {
   alerts: WaterAlert[];
@@ -30,11 +31,11 @@ interface AlertPanelProps {
 function SeverityIcon({ severity }: { severity: Severity }) {
   switch (severity) {
     case 'high':
-      return <AlertTriangle className="w-4 h-4 text-red" />;
+      return <AlertTriangle className="w-3.5 h-3.5 text-red" />;
     case 'medium':
-      return <Droplets className="w-4 h-4 text-amber" />;
+      return <Droplets className="w-3.5 h-3.5 text-amber" />;
     case 'low':
-      return <Info className="w-4 h-4 text-cyan" />;
+      return <Info className="w-3.5 h-3.5 text-cyan" />;
   }
 }
 
@@ -47,7 +48,6 @@ export default function AlertPanel({
 }: AlertPanelProps) {
   const { t, language } = useLanguage();
 
-  /** Severity label via translations */
   function severityLabel(severity: Severity): string {
     switch (severity) {
       case 'high': return t('alert.level.critical');
@@ -56,7 +56,6 @@ export default function AlertPanel({
     }
   }
 
-  /** Relative time formatter */
   function timeAgo(timestamp: string): string {
     const now = new Date('2026-04-25T12:00:00Z');
     const then = new Date(timestamp);
@@ -73,159 +72,154 @@ export default function AlertPanel({
     if (diffHours > 0) return `${diffHours}h ${t('alert.time.ago')}`;
     return t('alert.time.justNow');
   }
-  // Count by severity
+
   const highCount = alerts.filter((a) => a.severity === 'high').length;
   const medCount = alerts.filter((a) => a.severity === 'medium').length;
   const lowCount = alerts.filter((a) => a.severity === 'low').length;
 
   return (
-    <div className="relative flex h-full">
-      {/* Collapse Toggle Button */}
+    <div
+      className="glass-panel drawer-transition flex flex-col overflow-hidden"
+      style={{
+        height: isCollapsed ? '44px' : '280px',
+        borderBottom: 'none',
+        borderLeft: 'none',
+        borderRight: 'none',
+        borderTop: '1.5px solid var(--glass-border)',
+      }}
+    >
+      {/* Drawer Handle */}
       <button
         id="alert-panel-toggle"
         onClick={onToggleCollapse}
-        className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-8 h-12 flex items-center justify-center rounded-l-lg cursor-pointer transition-colors duration-200"
-        style={{
-          background: 'var(--glass-bg)',
-          border: '1px solid var(--glass-border)',
-          borderRight: 'none',
-          color: 'var(--text-secondary)',
-        }}
-        aria-label={isCollapsed ? 'Expand alerts panel' : 'Collapse alerts panel'}
+        className="flex items-center justify-between px-5 h-[44px] flex-shrink-0 cursor-pointer transition-colors hover:bg-[rgba(212,168,67,0.03)]"
+        style={{ borderBottom: isCollapsed ? 'none' : '1px solid var(--glass-border)' }}
       >
-        {isCollapsed ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-      </button>
+        <div className="flex items-center gap-3">
+          <Activity className="w-3.5 h-3.5" style={{ color: 'var(--gold)' }} />
+          <span className="font-display text-[11px] font-bold tracking-wider uppercase text-text-primary">
+            {t('panel.alerts.title')}
+          </span>
+          <span
+            className="font-display text-[10px] font-bold px-2 py-0.5 rounded"
+            style={{
+              background: 'rgba(212, 168, 67, 0.1)',
+              color: 'var(--gold)',
+              border: '1px solid rgba(212, 168, 67, 0.15)',
+            }}
+          >
+            {alerts.length}
+          </span>
+        </div>
 
-      {/* Panel Content */}
-      <div
-        className={`glass-panel h-full flex flex-col transition-all duration-500 ease-out overflow-hidden ${
-          isCollapsed ? 'w-0 opacity-0 border-0' : 'w-[360px] opacity-100'
-        }`}
-        style={{
-          borderTop: 'none',
-          borderRight: 'none',
-          borderBottom: 'none',
-        }}
-      >
-        {/* Panel Header */}
-        <div className="px-5 pt-5 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--glass-border)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Activity className="w-4 h-4 text-cyan" />
-            <h2 className="font-display text-sm font-semibold tracking-wide uppercase text-text-primary">
-              Active Alerts
-            </h2>
-            <span
-              className="ml-auto font-body text-xs px-2 py-0.5 rounded-full"
-              style={{
-                background: 'rgba(0, 229, 255, 0.1)',
-                color: 'var(--cyan)',
-                border: '1px solid rgba(0, 229, 255, 0.15)',
-              }}
-            >
-              {alerts.length}
-            </span>
-          </div>
-
-          {/* Severity Breakdown Bar */}
-          <div className="flex items-center gap-3 text-xs text-text-muted font-body">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full severity-dot-high" />
+        <div className="flex items-center gap-4">
+          {/* Severity LED dots */}
+          <div className="flex items-center gap-3 text-[10px] text-text-muted font-body">
+            <div className="flex items-center gap-1">
+              <span className="w-[6px] h-[6px] rounded-full severity-dot-high" />
               <span>{highCount}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full severity-dot-medium" />
+            <div className="flex items-center gap-1">
+              <span className="w-[6px] h-[6px] rounded-full severity-dot-medium" />
               <span>{medCount}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full severity-dot-low" />
+            <div className="flex items-center gap-1">
+              <span className="w-[6px] h-[6px] rounded-full severity-dot-low" />
               <span>{lowCount}</span>
             </div>
           </div>
+
+          {isCollapsed ? (
+            <ChevronUp className="w-4 h-4 text-text-muted" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-text-muted" />
+          )}
         </div>
+      </button>
 
-        {/* Alert Cards List */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
-          {alerts.map((alert, index) => {
-            const isSelected = selectedAlertId === alert.id;
+      {/* Alert Cards — scrollable horizontal/grid */}
+      {!isCollapsed && (
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+            {alerts.map((alert, index) => {
+              const isSelected = selectedAlertId === alert.id;
 
-            return (
-              <button
-                key={alert.id}
-                id={`alert-card-${alert.id}`}
-                onClick={() => onSelectAlert(alert.id)}
-                className="animate-fade-in w-full text-left p-4 rounded-xl transition-all duration-200 cursor-pointer group"
-                style={{
-                  animationDelay: `${index * 50}ms`,
-                  background: isSelected
-                    ? 'rgba(0, 229, 255, 0.08)'
-                    : 'var(--alert-card-bg)',
-                  border: isSelected
-                    ? '1px solid rgba(0, 229, 255, 0.25)'
-                    : '1px solid transparent',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.background = 'var(--alert-card-hover)';
-                    e.currentTarget.style.border = '1px solid var(--alert-card-hover-border)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.background = 'var(--alert-card-bg)';
-                    e.currentTarget.style.border = '1px solid transparent';
-                  }
-                }}
-              >
-                {/* Card Header: Icon + Location + Time */}
-                <div className="flex items-start gap-3">
+              const severityStripeColor =
+                alert.severity === 'high'
+                  ? 'var(--red)'
+                  : alert.severity === 'medium'
+                  ? 'var(--amber)'
+                  : 'var(--cyan)';
+
+              return (
+                <button
+                  key={alert.id}
+                  id={`alert-card-${alert.id}`}
+                  onClick={() => onSelectAlert(alert.id)}
+                  className="animate-fade-in w-full text-left p-3 rounded-lg transition-all duration-200 cursor-pointer group flex gap-3"
+                  style={{
+                    animationDelay: `${index * 40}ms`,
+                    background: isSelected
+                      ? 'rgba(212, 168, 67, 0.08)'
+                      : 'var(--alert-card-bg)',
+                    border: isSelected
+                      ? '1px solid rgba(212, 168, 67, 0.25)'
+                      : '1px solid transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = 'var(--alert-card-hover)';
+                      e.currentTarget.style.border = '1px solid var(--alert-card-hover-border)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = 'var(--alert-card-bg)';
+                      e.currentTarget.style.border = '1px solid transparent';
+                    }
+                  }}
+                >
+                  {/* Severity stripe */}
                   <div
-                    className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5"
-                    style={{
-                      background:
-                        alert.severity === 'high'
-                          ? 'rgba(255, 61, 61, 0.1)'
-                          : alert.severity === 'medium'
-                          ? 'rgba(255, 145, 0, 0.1)'
-                          : 'rgba(0, 229, 255, 0.1)',
-                    }}
-                  >
-                    <SeverityIcon severity={alert.severity} />
-                  </div>
+                    className="w-[3px] rounded-full flex-shrink-0 self-stretch"
+                    style={{ background: severityStripeColor }}
+                  />
 
                   <div className="flex-1 min-w-0">
+                    {/* Top row: severity + time */}
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span
-                        className="text-[10px] font-display font-medium uppercase tracking-wider"
-                        style={{
-                          color:
-                            alert.severity === 'high'
-                              ? 'var(--red)'
-                              : alert.severity === 'medium'
-                              ? 'var(--amber)'
-                              : 'var(--cyan)',
-                        }}
-                      >
-                        {severityLabel(alert.severity)} · {alert.type}
-                      </span>
-                      <span className="text-[10px] text-text-muted font-body flex-shrink-0">
+                      <div className="flex items-center gap-1.5">
+                        <SeverityIcon severity={alert.severity} />
+                        <span
+                          className="text-[9px] font-display font-bold uppercase tracking-wider"
+                          style={{
+                            color: severityStripeColor,
+                          }}
+                        >
+                          {severityLabel(alert.severity)}
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-text-muted font-body font-medium tabular-nums flex-shrink-0">
                         {timeAgo(alert.timestamp)}
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-display font-medium text-text-primary truncate mb-1">
+                    {/* Location */}
+                    <h3 className="text-[13px] font-display font-semibold text-text-primary truncate mb-0.5">
                       {alert.location}
                     </h3>
 
-                    <p className="text-xs text-text-secondary font-body leading-relaxed line-clamp-2">
+                    {/* Description */}
+                    <p className="text-[11px] text-text-secondary font-body leading-snug line-clamp-2">
                       {alert.description}
                     </p>
                   </div>
-                </div>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

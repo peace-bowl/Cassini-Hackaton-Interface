@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bega River Segment",
+        "ndwi": 0.8,
+        "ndvi_water": 0.4,
+        "swir_type": "water",
+        "date": "2026-04-24"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[21.205, 45.749], [21.215, 45.752], [21.220, 45.748], [21.210, 45.745], [21.205, 45.749]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Parcul Rozelor (Vegetation)",
+        "ndwi": 0.1,
+        "ndvi_water": 0.7,
+        "swir_type": "vegetation",
+        "date": "2026-04-24"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[21.225, 45.748], [21.232, 45.750], [21.235, 45.745], [21.228, 45.743], [21.225, 45.748]]]
+      }
+    }
+  ]
+}

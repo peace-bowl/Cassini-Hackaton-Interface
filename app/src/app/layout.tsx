@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
-import { Outfit, DM_Sans } from "next/font/google";
+import { Syne, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
 /**
  * Root Layout
  * ────────────
- * Configures Google Fonts (Outfit + DM Sans) and global metadata.
+ * Configures Google Fonts (Syne + Source Sans 3) and global metadata.
  */
 
-const outfit = Outfit({
+const syne = Syne({
   variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const dmSans = DM_Sans({
+const sourceSans = Source_Sans_3({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
@@ -24,15 +24,16 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Cassini Observatory — EU Space for Water",
+  title: "Nereus System — EU Space for Water",
   description:
-    "Real-time water monitoring dashboard for the Timișoara region. Track flood risks, contamination alerts, soil moisture anomalies, and infrastructure status using satellite and ground-sensor data.",
+    "Real-time water monitoring dashboard powered by Copernicus Sentinel-2 satellite data. Track flood risks, contamination alerts, soil moisture anomalies, and infrastructure status across Romania.",
   keywords: [
     "EU Space for Water",
-    "Cassini",
+    "Nereus System",
+    "Cassini Hackathon",
     "water monitoring",
     "flood detection",
-    "Timișoara",
+    "Copernicus Sentinel-2",
     "environmental dashboard",
   ],
 };
@@ -45,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${dmSans.variable} h-full`}
+      className={`${syne.variable} ${sourceSans.variable} h-full`}
     >
       <body className="h-full overflow-hidden">
         <LanguageProvider>

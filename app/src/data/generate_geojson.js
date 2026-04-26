@@ -26,8 +26,12 @@ osmData.elements.forEach((el) => {
   let coordinates = [];
   
   if (isRiver) {
-    // Buffer the line by a small amount to make it a polygon
-    const buffer = 0.0003; // approx 30 meters
+    // Buffer the centerline to create a wide polygon that fully covers the river.
+    // 0.002 degrees latitude ≈ 220 m; we compensate longitude for lat ~45°
+    // so the buffer is roughly equal in real-world meters on both axes.
+    const bufferLat = 0.002; // ~220 m in latitude direction
+    const lonScale = Math.cos((45 * Math.PI) / 180); // ≈ 0.707 at 45° N
+    const bufferLon = bufferLat / lonScale; // ~0.00283° → same real-world width
     let leftSide = [];
     let rightSide = [];
     
@@ -36,6 +40,7 @@ osmData.elements.forEach((el) => {
       let pNext = el.geometry[i+1] || el.geometry[i];
       let pPrev = el.geometry[i-1] || el.geometry[i];
       
+      // Direction vector along the river centerline
       let dx = pNext.lon - pPrev.lon;
       let dy = pNext.lat - pPrev.lat;
       let len = Math.sqrt(dx*dx + dy*dy);
@@ -44,11 +49,13 @@ osmData.elements.forEach((el) => {
         dx = 1; dy = 0; len = 1;
       }
       
+      // Perpendicular (normal) vector — normalised
       let nx = -dy / len;
       let ny = dx / len;
       
-      leftSide.push([p.lon + nx * buffer, p.lat + ny * buffer]);
-      rightSide.push([p.lon - nx * buffer, p.lat - ny * buffer]);
+      // Offset each side by the appropriate buffer for its axis
+      leftSide.push([p.lon + nx * bufferLon, p.lat + ny * bufferLat]);
+      rightSide.push([p.lon - nx * bufferLon, p.lat - ny * bufferLat]);
     }
     rightSide.reverse();
     coordinates = [...leftSide, ...rightSide, leftSide[0]]; // Close polygon

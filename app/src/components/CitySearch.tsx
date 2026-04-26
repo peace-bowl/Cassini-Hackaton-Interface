@@ -11,7 +11,7 @@ export interface CityResult {
   display_name: string;
   lat: string;
   lon: string;
-  boundingbox: [string, string, string, string]; // [south, north, west, east]
+  boundingbox: [string, string, string, string];
 }
 
 interface CitySearchProps {
@@ -81,7 +81,6 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
       east: parseFloat(city.boundingbox[3]),
     };
     
-    // Extract short name
     const shortName = city.display_name.split(',')[0];
     
     setQuery(shortName);
@@ -92,10 +91,10 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
   return (
     <div className="relative" ref={dropdownRef}>
       <div 
-        className="flex items-center glass-panel rounded-xl px-3 py-2 w-full transition-all duration-300"
-        style={{ border: '1px solid rgba(0, 229, 255, 0.2)' }}
+        className="glass-panel flex items-center rounded-lg px-3 py-2 w-full transition-all duration-200"
+        style={{ border: '1.5px solid var(--shelf)' }}
       >
-        <Search className="w-4 h-4 text-cyan opacity-70 mr-2" />
+        <Search className="w-3.5 h-3.5 mr-2 flex-shrink-0" style={{ color: 'var(--gold-dim)' }} />
         <input
           type="text"
           placeholder={t('search.placeholder')}
@@ -103,25 +102,33 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => { if (results.length > 0) setIsOpen(true); }}
           className="bg-transparent border-none outline-none text-sm text-text-primary placeholder:text-text-muted w-full font-body"
+          style={{ caretColor: 'var(--gold)' }}
         />
-        {isSearching && <Loader2 className="w-4 h-4 text-cyan animate-spin ml-2" />}
+        {isSearching && <Loader2 className="w-3.5 h-3.5 animate-spin ml-2 flex-shrink-0" style={{ color: 'var(--gold)' }} />}
       </div>
 
       {/* Dropdown */}
       {isOpen && results.length > 0 && (
         <div 
-          className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-50 animate-fade-in"
-          style={{ border: '1px solid var(--glass-border)' }}
+          className="absolute top-full left-0 right-0 mt-1.5 glass-panel rounded-lg overflow-hidden z-50 animate-fade-in"
+          style={{ border: '1.5px solid var(--glass-border)' }}
         >
           {results.map((result) => (
             <button
               key={result.place_id}
               onClick={() => handleSelect(result)}
-              className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-[rgba(0,229,255,0.05)] transition-colors border-b border-[rgba(255,255,255,0.05)] last:border-0 cursor-pointer"
+              className="w-full text-left px-3.5 py-2.5 flex items-start gap-2.5 transition-colors cursor-pointer"
+              style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(212, 168, 67, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
             >
-              <MapPin className="w-4 h-4 text-cyan shrink-0 mt-0.5" />
+              <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: 'var(--gold)' }} />
               <div className="flex flex-col">
-                <span className="font-display text-sm text-text-primary font-medium">
+                <span className="font-display text-sm text-text-primary font-semibold">
                   {result.display_name.split(',')[0]}
                 </span>
                 <span className="font-body text-[10px] text-text-muted mt-0.5 line-clamp-1">

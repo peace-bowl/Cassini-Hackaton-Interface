@@ -6,7 +6,7 @@
  */
 
 /** Available satellite layer IDs */
-export type SatelliteLayerId = 'standard' | 'ndwi' | 'ndvi' | 'ndsi' | 'swir';
+export type SatelliteLayerId = 'standard' | 'satellite' | 'ndwi' | 'ndvi' | 'swir';
 
 /** Configuration for a single satellite layer */
 export interface SatelliteLayerConfig {
@@ -25,53 +25,46 @@ export interface SatelliteLayerConfig {
 }
 
 /**
- * NDWI color ramp — matches Copernicus Browser NDWI palette
- * Dry land (brown) → moist soil (grey-green) → surface water (blue) → deep water (navy)
+ * NDWI — Dan's turbidity interpretation
+ * Clear water (#003366) ↔ Turbid/sediment (#ADD8E6)
  */
 function ndwiColor(value: number): string {
-  if (value < 0.0) return 'rgba(138,  97,  46, 0.75)';
-  if (value < 0.15) return 'rgba(186, 148,  80, 0.70)';
-  if (value < 0.30) return 'rgba(112, 168, 137, 0.72)';
-  if (value < 0.50) return 'rgba( 38, 139, 210, 0.78)';
-  if (value < 0.70) return 'rgba(  3,  93, 186, 0.85)';
-  return 'rgba(  3,  53, 140, 0.90)';
+  if (value < 0.15) return 'rgba(0, 0, 0, 0)';
+  if (value < 0.30) return 'rgba(210, 230, 255, 0.82)'; // turbid
+  if (value < 0.50) return 'rgba(140, 195, 245, 0.85)'; // moderate
+  if (value < 0.70) return 'rgba( 30, 100, 190, 0.88)'; // surface water
+  if (value < 0.85) return 'rgba( 10,  60, 150, 0.90)'; // open water
+  return 'rgba(  2,  30, 102, 0.93)';                    // deep water (#003366)
 }
 
 /**
- * NDVI color ramp — Copernicus red→yellow→green palette
+ * NDVI — Dan's algae/silt interpretation using ndvi_water property
+ * Silt/waste (brown #8B4513) ↔ Algae bloom (green #228B22)
  */
-function ndviColor(value: number): string {
-  if (value < 0.1) return 'rgba(215,  48,  39, 0.75)';
-  if (value < 0.2) return 'rgba(244, 109,  67, 0.72)';
-  if (value < 0.3) return 'rgba(253, 174,  97, 0.72)';
-  if (value < 0.5) return 'rgba(166, 217, 106, 0.75)';
-  if (value < 0.7) return 'rgba( 82, 188, 144, 0.78)';
-  return 'rgba( 26, 152,  80, 0.85)';
+function ndviColor(value: number, _surfaceType?: string): string {
+  // value here corresponds to ndvi_water (0–1)
+  if (value < 0.15) return 'rgba(110,  55,  15, 0.80)'; // dark silt
+  if (value < 0.30) return 'rgba(139,  69,  19, 0.78)'; // silt (#8B4513)
+  if (value < 0.50) return 'rgba(160,  95,  40, 0.75)'; // mixed
+  if (value < 0.65) return 'rgba( 80, 160,  50, 0.78)'; // emerging algae
+  if (value < 0.80) return 'rgba( 44, 139,  40, 0.82)'; // algae (#228B22)
+  return 'rgba( 20, 100,  10, 0.88)';                    // dense bloom
 }
 
-/**
- * NDSI color ramp — dark → pale-blue → white
- */
-function ndsiColor(value: number): string {
-  if (value < 0.1) return 'rgba( 30,  30,  50, 0.20)';
-  if (value < 0.3) return 'rgba( 74, 113, 168, 0.55)';
-  if (value < 0.5) return 'rgba(116, 169, 207, 0.65)';
-  if (value < 0.7) return 'rgba(166, 217, 247, 0.75)';
-  return 'rgba(215, 240, 255, 0.85)';
-}
 
 /**
- * SWIR false-colour — categorical based on surface type
+ * SWIR — Dan's surface type categorical
+ * Water (#000000/navy) | Vegetation (#32CD32) | Urban (#A52A2A)
  */
 function swirColor(value: number, surfaceType?: string): string {
   switch (surfaceType) {
-    case 'water': return 'rgba(  3,  30, 100, 0.85)';
-    case 'vegetation': return 'rgba( 44, 188,  66, 0.75)';
-    case 'soil': return 'rgba(180, 100, 120, 0.72)';
+    case 'water':      return 'rgba(  5,  20,  80, 0.88)';
+    case 'vegetation': return 'rgba( 50, 205,  50, 0.80)';
+    case 'urban':      return 'rgba(165,  42,  42, 0.78)';
     default:
-      if (value > 0.5) return 'rgba(  3,  30, 100, 0.80)';
-      if (value > 0.3) return 'rgba( 44, 188,  66, 0.70)';
-      return 'rgba(180, 100, 120, 0.65)';
+      if (value > 0.5) return 'rgba(  5,  20,  80, 0.85)';
+      if (value > 0.3) return 'rgba( 50, 205,  50, 0.75)';
+      return 'rgba(180, 120,  60, 0.70)';
   }
 }
 
@@ -87,64 +80,59 @@ export const SATELLITE_LAYERS: SatelliteLayerConfig[] = [
     legendStops: [],
   },
   {
+    id: 'satellite',
+    name: 'Satellite',
+    fullName: 'True Color Imagery',
+    description: 'Copernicus Sentinel-2 true color composite without analysis overlays',
+    propertyKey: '',
+    getColor: () => 'transparent',
+    legendStops: [],
+  },
+  {
     id: 'ndwi',
     name: 'NDWI',
     fullName: 'Normalized Difference Water Index',
-    description: 'Maps water bodies and surface moisture content',
+    description: 'Turbidity detection — identifies suspended sediments and clear water zones',
     propertyKey: 'ndwi',
     getColor: ndwiColor,
     legendStops: [
-      { color: '#8a612e', label: 'Dry' },
-      { color: '#ba9450', label: 'Moist Soil' },
-      { color: '#70a889', label: 'Wetland' },
-      { color: '#268bd2', label: 'Surface Water' },
-      { color: '#035dba', label: 'Open Water' },
-      { color: '#03358c', label: 'Deep Water' },
+      { color: '#3ca85c', label: 'Land' },
+      { color: '#d2e6ff', label: 'Turbid' },      // Dan: #ADD8E6
+      { color: '#8cc3f5', label: 'Moderate' },
+      { color: '#1e64be', label: 'Surface Water' },
+      { color: '#0a3c96', label: 'Open Water' },
+      { color: '#021e66', label: 'Clear' },       // Dan: #003366
     ],
   },
   {
     id: 'ndvi',
     name: 'NDVI',
-    fullName: 'Normalized Difference Vegetation Index',
-    description: 'Vegetation health and density near water bodies',
-    propertyKey: 'ndvi',
+    fullName: 'Silt & Algae Index (ndvi_water)',
+    description: 'Silt/waste vs algae bloom detection in water bodies',
+    propertyKey: 'ndvi_water',
     getColor: ndviColor,
     legendStops: [
-      { color: '#d73027', label: 'Bare' },
-      { color: '#f46d43', label: 'Sparse' },
-      { color: '#fdae61', label: 'Low' },
-      { color: '#a6d96a', label: 'Moderate' },
-      { color: '#52bc90', label: 'Healthy' },
-      { color: '#1a9850', label: 'Dense' },
+      { color: '#6e370f', label: 'Silt/Waste' },  // Dan: #8B4513 brown
+      { color: '#8b4513', label: 'Silt' },
+      { color: '#a05f28', label: 'Mixed' },
+      { color: '#50a032', label: 'Algae' },
+      { color: '#2c8b28', label: 'Bloom' },       // Dan: #228B22 green
+      { color: '#14640a', label: 'Dense' },
     ],
   },
-  {
-    id: 'ndsi',
-    name: 'NDSI',
-    fullName: 'Normalized Difference Snow Index',
-    description: 'Snow cover and ice detection',
-    propertyKey: 'ndsi',
-    getColor: ndsiColor,
-    legendStops: [
-      { color: '#1e1e32', label: 'None' },
-      { color: '#4a71a8', label: 'Trace' },
-      { color: '#74a9cf', label: 'Light' },
-      { color: '#a6d9f7', label: 'Heavy' },
-      { color: '#d7f0ff', label: 'Ice' },
-    ],
-  },
+
   {
     id: 'swir',
     name: 'SWIR',
     fullName: 'Short-Wave Infrared Composite',
-    description: 'False-color highlighting soil moisture and saturation',
-    propertyKey: 'ndwi', // uses ndwi value for fallback gradient
+    description: 'Surface type classification — water, vegetation, and urban/soil zones',
+    propertyKey: 'ndwi',
     getColor: swirColor,
     legendStops: [],
     legendCategories: [
-      { color: '#031e64', label: 'Water' },
-      { color: '#2cbc42', label: 'Vegetation' },
-      { color: '#b46478', label: 'Bare Soil' },
+      { color: '#05144f', label: 'Water' },          // Dan: #000000 → navy
+      { color: '#32cd32', label: 'Vegetation' },     // Dan: #32CD32
+      { color: '#a52a2a', label: 'Urban / Soil' },   // Dan: #A52A2A
     ],
   },
 ];
@@ -169,12 +157,7 @@ export function getIndexDescription(layerId: SatelliteLayerId, value: number): s
       if (value >= 0.3) return 'Sparse Vegetation';
       if (value >= 0.1) return 'Stressed Vegetation';
       return 'Bare Soil / No Vegetation';
-    case 'ndsi':
-      if (value >= 0.7) return 'Dense Snow / Ice Cover';
-      if (value >= 0.5) return 'Heavy Snow';
-      if (value >= 0.3) return 'Moderate Snow';
-      if (value >= 0.1) return 'Trace Snow';
-      return 'No Snow Detected';
+
     case 'swir':
       return 'False-Color Infrared Composite';
     default:

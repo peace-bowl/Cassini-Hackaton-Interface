@@ -1,0 +1,295 @@
+/* ================================================================
+   Nereus System — Global Design System
+   Theme: Deep ocean / water-science aesthetic
+   ================================================================ */
+
+@import "tailwindcss";
+
+/* Google Fonts are loaded via index.html */
+
+:root {
+  /* Deep-ocean observatory palette (Reference UI) */
+  --abyss: #060a14;
+  --deep: #0a0e1a;
+  --ocean: #0d1525;
+  --trench: #111b2e;
+  --shelf: #1a2940;
+  --surface: #243552;
+
+  /* Accent colors */
+  --cyan: #00e5ff;
+  --cyan-dim: #00a5b8;
+  --cyan-glow: rgba(0, 229, 255, 0.15);
+  --amber: #ff9100;
+  --amber-dim: #c67000;
+  --amber-glow: rgba(255, 145, 0, 0.15);
+  --red: #ff3d3d;
+  --red-dim: #c62828;
+  --red-glow: rgba(255, 61, 61, 0.15);
+  --green: #00e676;
+  --green-dim: #00a853;
+  --green-glow: rgba(0, 230, 118, 0.12);
+
+  /* Text colors */
+  --text-primary: #e8edf5;
+  --text-secondary: #8a9bb5;
+  --text-muted: #56687d;
+
+  /* Glass effects */
+  --glass-bg: rgba(13, 21, 37, 0.72);
+  --glass-border: rgba(36, 53, 82, 0.6);
+  --glass-highlight: rgba(0, 229, 255, 0.06);
+
+  /* Fallbacks for existing components to prevent breakage */
+  --color-bg: var(--abyss);
+  --color-surface: var(--ocean);
+  --color-surface-2: var(--shelf);
+  --color-border: var(--glass-border);
+  --color-border-glow: rgba(0, 229, 255, 0.5);
+  --color-primary: var(--cyan);
+  --color-primary-dim: rgba(0, 229, 255, 0.12);
+  --color-alert-high: var(--red);
+  --color-alert-med: var(--amber);
+  --color-alert-low: var(--cyan);
+  --color-clean: var(--green);
+  --color-satellite: #a78bfa;
+  --color-text-1: var(--text-primary);
+  --color-text-2: var(--text-secondary);
+  --color-text-3: var(--text-muted);
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+  --font-body: 'DM Sans', 'Inter', system-ui, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --shadow-glow: 0 0 24px rgba(0, 229, 255, 0.25);
+  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+@theme inline {
+  --color-abyss: var(--abyss);
+  --color-deep: var(--deep);
+  --color-ocean: var(--ocean);
+  --color-trench: var(--trench);
+  --color-shelf: var(--shelf);
+  --color-surface: var(--surface);
+  --color-cyan: var(--cyan);
+  --color-cyan-dim: var(--cyan-dim);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+  --color-red: var(--red);
+  --color-red-dim: var(--red-dim);
+  --color-green: var(--green);
+  --color-green-dim: var(--green-dim);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+/* ---- Reset ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  background: var(--color-bg);
+  color: var(--color-text-1);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border-glow); border-radius: 2px; }
+
+/* ================================================================
+   Glass panel utility (Reference UI)
+   ================================================================ */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.03),
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 229, 255, 0.1),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-glow:hover::before {
+  opacity: 1;
+}
+
+/* Fallback for old class */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+}
+
+/* ================================================================
+   Severity badge colours
+   ================================================================ */
+.badge-high   { background: rgba(255, 59, 59, 0.18);  color: var(--color-alert-high); border: 1px solid rgba(255,59,59,0.4); }
+.badge-medium { background: rgba(255,140,  0, 0.18);  color: var(--color-alert-med);  border: 1px solid rgba(255,140,0,0.4); }
+.badge-low    { background: rgba(245,216,  0, 0.15);  color: var(--color-alert-low);  border: 1px solid rgba(245,216,0,0.4); }
+.badge-clean  { background: rgba(  0,232,122, 0.12);  color: var(--color-clean);      border: 1px solid rgba(0,232,122,0.4); }
+.badge-sat    { background: rgba(167,139,250, 0.15);  color: var(--color-satellite);  border: 1px solid rgba(167,139,250,0.4); }
+.badge-citizen{ background: rgba(  0,180,255, 0.12);  color: var(--color-primary);    border: 1px solid rgba(0,180,255,0.4); }
+
+/* ================================================================
+   Pulse animation for alert markers
+   ================================================================ */
+@keyframes pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.alert-marker-pulse::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--color-alert-high);
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+/* ================================================================
+   Glow animation for the logo
+   ================================================================ */
+@keyframes logo-glow {
+  0%, 100% { text-shadow: 0 0 8px rgba(0,180,255,0.4); }
+  50%       { text-shadow: 0 0 20px rgba(0,180,255,0.9), 0 0 40px rgba(0,100,200,0.5); }
+}
+
+/* ================================================================
+   Slide-in for panels
+   ================================================================ */
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+@keyframes slide-in-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in { animation: fadeSlideUp 0.5s ease-out forwards; opacity: 0; }
+.animate-slide-in-left { animation: slide-in-left 0.35s cubic-bezier(.22,.68,0,1.2) both; }
+.animate-slide-in-up   { animation: slide-in-up   0.3s  cubic-bezier(.22,.68,0,1.2) both; }
+
+/* ================================================================
+   Button variants
+   ================================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  font-family: var(--font-sans);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #000;
+}
+.btn-primary:hover { background: #33c6ff; box-shadow: 0 0 16px rgba(0,180,255,0.5); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-2);
+  border: 1px solid var(--color-border);
+}
+.btn-ghost:hover { background: var(--color-primary-dim); color: var(--color-primary); border-color: var(--color-primary); }
+
+.btn-danger {
+  background: rgba(255,59,59,0.15);
+  color: var(--color-alert-high);
+  border: 1px solid rgba(255,59,59,0.35);
+}
+.btn-danger:hover { background: rgba(255,59,59,0.28); }
+
+/* ================================================================
+   Form controls
+   ================================================================ */
+.input, .select, .textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-1);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0,180,255,0.15);
+}
+.select option { background: var(--color-surface); }
+.textarea { resize: vertical; min-height: 80px; }
+
+/* ================================================================
+   MapLibre overrides
+   ================================================================ */
+.maplibregl-ctrl-group {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+}
+.maplibregl-ctrl-group button {
+  background-color: transparent !important;
+  color: var(--color-text-2) !important;
+}
+.maplibregl-ctrl-group button:hover { background: var(--color-primary-dim) !important; }
+.maplibregl-popup-content {
+  background: var(--color-surface-2) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--color-text-1) !important;
+  font-family: var(--font-sans) !important;
+  padding: 10px 14px !important;
+  box-shadow: var(--shadow-panel) !important;
+}
+.maplibregl-popup-tip { display: none !important; }
+.maplibregl-popup-close-button { color: var(--color-text-2) !important; font-size: 18px !important; }

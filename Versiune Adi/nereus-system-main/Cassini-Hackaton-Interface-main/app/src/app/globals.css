@@ -1,0 +1,397 @@
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+/* ─── Design Tokens ─── */
+:root {
+  /* Deep-ocean observatory palette */
+  --abyss: #060a14;
+  --deep: #0a0e1a;
+  --ocean: #0d1525;
+  --trench: #111b2e;
+  --shelf: #1a2940;
+  --surface: #243552;
+
+  /* Accent colors */
+  --cyan: #00e5ff;
+  --cyan-dim: #00a5b8;
+  --cyan-glow: rgba(0, 229, 255, 0.15);
+  --amber: #ff9100;
+  --amber-dim: #c67000;
+  --amber-glow: rgba(255, 145, 0, 0.15);
+  --red: #ff3d3d;
+  --red-dim: #c62828;
+  --red-glow: rgba(255, 61, 61, 0.15);
+  --green: #00e676;
+  --green-dim: #00a853;
+  --green-glow: rgba(0, 230, 118, 0.12);
+
+  /* Text colors */
+  --text-primary: #e8edf5;
+  --text-secondary: #8a9bb5;
+  --text-muted: #56687d;
+
+  /* Glass effects */
+  --glass-bg: rgba(13, 21, 37, 0.72);
+  --glass-border: rgba(36, 53, 82, 0.6);
+  --glass-highlight: rgba(0, 229, 255, 0.06);
+}
+
+.light {
+  /* Bright, high-contrast palette */
+  --abyss: #f4f7f6;
+  --deep: #e8ecf1;
+  --ocean: #ffffff;
+  --trench: #ffffff;
+  --shelf: #e2e8f0;
+  --surface: #cbd5e1;
+
+  /* Accent colors (slightly tweaked for light mode contrast) */
+  --cyan: #008eb3;
+  --cyan-dim: #00708f;
+  --cyan-glow: rgba(0, 142, 179, 0.15);
+  --amber: #d97b00;
+  --amber-dim: #b36600;
+  --amber-glow: rgba(217, 123, 0, 0.15);
+  --red: #d32f2f;
+  --red-dim: #b71c1c;
+  --red-glow: rgba(211, 47, 47, 0.15);
+  --green: #00b35c;
+  --green-dim: #008f4a;
+  --green-glow: rgba(0, 179, 92, 0.12);
+
+  /* Text colors */
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+
+  /* Glass effects */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-highlight: rgba(0, 0, 0, 0.03);
+}
+
+/* ─── Tailwind Theme Integration ─── */
+@theme inline {
+  --color-abyss: var(--abyss);
+  --color-deep: var(--deep);
+  --color-ocean: var(--ocean);
+  --color-trench: var(--trench);
+  --color-shelf: var(--shelf);
+  --color-surface: var(--surface);
+  --color-cyan: var(--cyan);
+  --color-cyan-dim: var(--cyan-dim);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+  --color-red: var(--red);
+  --color-red-dim: var(--red-dim);
+  --color-green: var(--green);
+  --color-green-dim: var(--green-dim);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --font-display: "Outfit", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+}
+
+/* ─── Base Styles ─── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--abyss);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Noise Grain Overlay ─── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ─── Frosted Glass Panel ─── */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.03),
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.light .glass-panel {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ─── Light mode alert card backgrounds ─── */
+:root {
+  --alert-card-bg: rgba(13, 21, 37, 0.4);
+  --alert-card-hover: rgba(26, 41, 64, 0.5);
+  --alert-card-hover-border: rgba(36, 53, 82, 0.6);
+}
+
+.light {
+  --alert-card-bg: rgba(255, 255, 255, 0.6);
+  --alert-card-hover: rgba(255, 255, 255, 0.9);
+  --alert-card-hover-border: rgba(0, 0, 0, 0.15);
+}
+
+/* ─── Severity Indicator Glow ─── */
+.severity-high {
+  color: var(--red);
+  text-shadow: 0 0 8px var(--red-glow);
+}
+
+.severity-medium {
+  color: var(--amber);
+  text-shadow: 0 0 8px var(--amber-glow);
+}
+
+.severity-low {
+  color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan-glow);
+}
+
+.severity-dot-high {
+  background: var(--red);
+  box-shadow: 0 0 6px 2px rgba(255, 61, 61, 0.5);
+}
+
+.severity-dot-medium {
+  background: var(--amber);
+  box-shadow: 0 0 6px 2px rgba(255, 145, 0, 0.5);
+}
+
+.severity-dot-low {
+  background: var(--cyan);
+  box-shadow: 0 0 6px 2px rgba(0, 229, 255, 0.4);
+}
+
+/* ─── Scrollbar Styling ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--shelf);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface);
+}
+
+/* ─── Map Marker Pulsing Animation ─── */
+@keyframes marker-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.marker-pulse-ring {
+  animation: marker-pulse 2s ease-out infinite;
+}
+
+/* ─── MapLibre Popup Overrides ─── */
+.maplibregl-popup-content {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) saturate(1.2) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  min-width: 240px !important;
+  font-family: var(--font-body) !important;
+}
+
+.light .maplibregl-popup-content {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Force popup text to adapt to theme */
+.light .maplibregl-popup-content h3,
+.light .maplibregl-popup-content p,
+.light .maplibregl-popup-content span {
+  color: var(--text-primary) !important;
+}
+
+.maplibregl-popup-tip {
+  border-top-color: var(--glass-bg) !important;
+}
+
+.maplibregl-popup-close-button {
+  color: var(--text-secondary) !important;
+  font-size: 18px !important;
+  right: 8px !important;
+  top: 8px !important;
+}
+
+.maplibregl-popup-close-button:hover {
+  color: var(--cyan) !important;
+  background: transparent !important;
+}
+
+/* ─── MapLibre Navigation Controls light theme ─── */
+.light .maplibregl-ctrl-group {
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.light .maplibregl-ctrl button {
+  color: #374151 !important;
+}
+
+.light .maplibregl-ctrl button:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ─── Staggered Fade-In Animation ─── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeSlideUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+/* ─── Map Container ─── */
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+.map-container .maplibregl-canvas {
+  outline: none;
+  filter: contrast(1.2) brightness(1.5);
+}
+
+/* ─── Toast Notification ─── */
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.toast-enter {
+  animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-exit {
+  animation: toastSlideOut 0.3s ease-in forwards;
+}
+
+/* ─── Glow Underline Effect ─── */
+.glow-underline {
+  position: relative;
+}
+
+.glow-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyan),
+    transparent
+  );
+  opacity: 0.4;
+}
+
+/* ─── Interactive button hover ─── */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 229, 255, 0.1),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-glow:hover::before {
+  opacity: 1;
+}
+
+/* ─── MapLibre Attribution Minimal ─── */
+.maplibregl-ctrl-attrib {
+  font-size: 10px !important;
+  background: rgba(6, 10, 20, 0.6) !important;
+  color: var(--text-muted) !important;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--cyan-dim) !important;
+}

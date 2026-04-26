@@ -1,0 +1,150 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bega River Segment",
+        "ndwi": 0.8,
+        "ndvi_water": 0.4,
+        "swir_type": "water",
+        "date": "2026-04-24"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[21.205, 45.749], [21.215, 45.752], [21.220, 45.748], [21.210, 45.745], [21.205, 45.749]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Parcul Rozelor (Vegetation)",
+        "ndwi": 0.1,
+        "ndvi_water": 0.7,
+        "swir_type": "vegetation",
+        "date": "2026-04-24"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[21.225, 45.748], [21.232, 45.750], [21.235, 45.745], [21.228, 45.743], [21.225, 45.748]]]
+      }
+    }
+  ]
+}
+
+
+
+
+
+
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, GeoJSON, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Styling configuration for the different layers
+const LAYER_CONFIG = {
+  STANDARD: { label: 'Standard Map', colors: null },
+  NDWI: {
+    label: 'NDWI (Turbidity)',
+    min: 'Clear', max: 'Turbid',
+    gradient: 'linear-gradient(to right, #fdfcfb, #003366)',
+    desc: 'Determines water turbidity levels.'
+  },
+  NDVI: {
+    label: 'NDVI (Silt & Algae)',
+    min: 'Silt/Waste', max: 'Algae',
+    gradient: 'linear-gradient(to right, #8B4513, #228B22)',
+    desc: 'Brown: Silt/Waste | Green: Microorganisms'
+  },
+  SWIR: {
+    label: 'SWIR (Infrared)',
+    min: 'Dry', max: 'Saturated',
+    gradient: 'linear-gradient(to right, #D2B48C, #006400, #000000)',
+    desc: 'Water=Black, Veg=Green, Soil=Brown'
+  }
+};
+
+const SatelliteDashboard = () => {
+  const [activeLayer, setActiveLayer] = useState('STANDARD');
+
+  // Function to determine polygon style based on selected index
+  const getStyle = (feature) => {
+    const { ndwi, ndvi_water, swir_type } = feature.properties;
+
+    if (activeLayer === 'NDWI') {
+      return { fillColor: ndwi > 0.5 ? '#003366' : '#ADD8E6', fillOpacity: 0.7, color: 'white', weight: 1 };
+    }
+    if (activeLayer === 'NDVI') {
+      // Logic: Lower values = silt (brown), Higher = algae (green)
+      return { fillColor: ndvi_water > 0.5 ? '#228B22' : '#8B4513', fillOpacity: 0.7, color: 'white', weight: 1 };
+    }
+    if (activeLayer === 'SWIR') {
+      const colors = { water: '#000000', vegetation: '#32CD32', urban: '#A52A2A' };
+      return { fillColor: colors[swir_type] || '#ccc', fillOpacity: 0.8, color: 'white', weight: 1 };
+    }
+    return { fillOpacity: 0, weight: 0 }; // Hide mock polygons on standard map
+  };
+
+  return (
+    <div className="relative w-full h-screen bg-slate-900 overflow-hidden">
+      {/* 1. SATELLITE DATA CONTROL PANEL */}
+      <div className="absolute top-6 left-6 z-[1000] w-64 bg-slate-900/80 backdrop-blur-md border border-slate-700 p-5 rounded-xl shadow-2xl text-white">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-400 mb-4">Earth Observation</h2>
+        <div className="space-y-3">
+          {Object.keys(LAYER_CONFIG).map((key) => (
+            <button
+              key={key}
+              onClick={() => setActiveLayer(key)}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                activeLayer === key ? 'bg-cyan-600 shadow-lg shadow-cyan-900/40' : 'hover:bg-slate-700'
+              }`}
+            >
+              {LAYER_CONFIG[key].label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-4 text-[10px] text-slate-400 leading-relaxed italic">
+          {LAYER_CONFIG[activeLayer].desc || "Select a layer to visualize satellite indices."}
+        </p>
+      </div>
+
+      {/* 2. DYNAMIC LEGEND */}
+      {activeLayer !== 'STANDARD' && (
+        <div className="absolute bottom-8 right-8 z-[1000] bg-slate-900/90 backdrop-blur-md border border-slate-700 p-4 rounded-lg shadow-xl text-white min-w-[200px]">
+          <h3 className="text-[10px] font-bold uppercase mb-2 text-slate-400">{activeLayer} Index Range</h3>
+          <div className="h-3 w-full rounded" style={{ background: LAYER_CONFIG[activeLayer].gradient }}></div>
+          <div className="flex justify-between mt-2 text-[10px] font-mono tracking-tighter">
+            <span>{LAYER_CONFIG[activeLayer].min}</span>
+            <span>{LAYER_CONFIG[activeLayer].max}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 3. MAP OVERLAY */}
+      <MapContainer center={[45.7489, 21.2087]} zoom={14} className="h-full w-full">
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; OpenStreetMap &copy; CARTO'
+        />
+
+        <GeoJSON
+          key={activeLayer} // Key forces re-render on toggle
+          data={mockData}
+          style={getStyle}
+          onEachFeature={(feature, layer) => {
+            layer.bindPopup(`
+              <div class="p-2 font-sans">
+                <strong class="text-slate-800">${feature.properties.name}</strong><br/>
+                <hr class="my-1"/>
+                <span class="text-xs">Index Value: <b>${feature.properties.ndwi}</b></span><br/>
+                <span class="text-xs text-slate-500 italic">Sentinel-2 Pass: ${feature.properties.date}</span>
+              </div>
+            `);
+          }}
+        />
+      </MapContainer>
+    </div>
+  );
+};
+
+export default SatelliteDashboard;
